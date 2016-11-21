@@ -1,0 +1,53 @@
+{
+  "name": "regl",
+  "version": "0.1.0",
+  "description": "Reason bindings to WebGL and OpenGL",
+  "scripts": {
+    "postinstall": "npm run build",
+    "test": "_build/src/app.out",
+    "start": "_build/src/app.out",
+    "build": "eval $(dependencyEnv) && nopam && rebel -verbose",
+    "top": "eval $(dependencyEnv) && rtop",
+    "env": "eval $(dependencyEnv) && env",
+    "editor": "eval $(dependencyEnv) && $EDITOR .",
+    "whereisocamlmerlin": "eval $(dependencyEnv)a && which ocamlmerlin-reason",
+    "mlre": "pbpaste | ./node_modules/reason/refmt_impl.native -parse ml -print re -use-stdin true -is-interface-pp false",
+    "reml": "pbpaste | ./node_modules/reason/refmt_impl.native -parse re -print ml -use-stdin true -is-interface-pp false",
+    "asd": "eval $(dependencyEnv) && nopam && echo $PKG_CONFIG_PATH"
+  },
+  "dependencies": {
+    "@opam-alpha/tgls": "*",
+    "@opam-alpha/topkg": "*",
+    "@opam-alpha/merlin": "^ 2.5.0",
+    "dependency-env": "https://github.com/npm-ml/dependency-env.git",
+    "tsdl-actual": "https://github.com/bsansouci/tsdl.git#packagejson",
+    "nopam": "https://github.com/yunxing/nopam.git",
+    "realpath": "*",
+    "reason": "https://github.com/facebook/reason.git",
+    "bs-platform": "https://github.com/bloomberg/bucklescript.git",
+    "webpack": "*"
+  },
+  "rebel": {
+    "targets": [
+      {
+        "target": "opengl",
+        "engine": "native",
+        "entry": "src/opengl.re",
+        "unstable_flags": {
+          "compile": "-package tgls.tgl3,tsdl",
+          "link": "-linkpkg -package tgls.tgl3,tsdl"
+        }
+      },
+      {
+        "target": "webgl",
+        "engine": "bucklescript",
+        "entry": "src/webgl.re"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsansouci/ocaml-re.git"
+  },
+  "author": "bsansouci & schmavery"
+}
