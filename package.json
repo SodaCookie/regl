@@ -3,8 +3,6 @@
   "version": "0.1.0",
   "description": "Reason bindings to WebGL and OpenGL",
   "scripts": {
-    "postinstall": "npm run build",
-    "test": "_build/src/app.out",
     "start": "_build/src/app.out",
     "build": "eval $(dependencyEnv) && nopam && rebel -verbose",
     "top": "eval $(dependencyEnv) && rtop",
@@ -12,8 +10,7 @@
     "editor": "eval $(dependencyEnv) && $EDITOR .",
     "whereisocamlmerlin": "eval $(dependencyEnv)a && which ocamlmerlin-reason",
     "mlre": "pbpaste | ./node_modules/reason/refmt_impl.native -parse ml -print re -use-stdin true -is-interface-pp false",
-    "reml": "pbpaste | ./node_modules/reason/refmt_impl.native -parse re -print ml -use-stdin true -is-interface-pp false",
-    "asd": "eval $(dependencyEnv) && nopam && echo $PKG_CONFIG_PATH"
+    "reml": "pbpaste | ./node_modules/reason/refmt_impl.native -parse re -print ml -use-stdin true -is-interface-pp false"
   },
   "dependencies": {
     "tgls-actual": "https://github.com/bsansouci/tgls.git#packagejson",
