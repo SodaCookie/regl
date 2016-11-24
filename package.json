@@ -16,7 +16,7 @@
     "asd": "eval $(dependencyEnv) && nopam && echo $PKG_CONFIG_PATH"
   },
   "dependencies": {
-    "@opam-alpha/tgls": "*",
+    "@opam-alpha/tgls": "https://github.com/bsansouci/tgls.git#packagejson",
     "@opam-alpha/topkg": "*",
     "@opam-alpha/merlin": "^ 2.5.0",
     "dependency-env": "https://github.com/npm-ml/dependency-env.git",
