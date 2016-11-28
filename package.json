@@ -5,8 +5,10 @@
   "scripts": {
     "start": "_build/src/app.out",
     "build": "eval $(dependencyEnv) && nopam && rebel -verbose",
+    "buildexample": "npm run build && webpack _build/web/src/web_Tar__ExampleEntrypoint.js _build/web/src/app.js",
     "top": "eval $(dependencyEnv) && rtop",
     "env": "eval $(dependencyEnv) && env",
+    "ocamldep": "eval $(dependencyEnv) && ocamldep",
     "editor": "eval $(dependencyEnv) && $EDITOR .",
     "whereisocamlmerlin": "eval $(dependencyEnv)a && which ocamlmerlin-reason",
     "mlre": "pbpaste | ./node_modules/reason/refmt_impl.native -parse ml -print re -use-stdin true -is-interface-pp false",
@@ -27,18 +29,13 @@
   "rebel": {
     "targets": [
       {
-        "target": "opengl",
-        "engine": "native",
-        "entry": "src/opengl.re",
-        "unstable_flags": {
-          "compile": "-package tgls.tgl3,tsdl",
-          "link": "-linkpkg -package tgls.tgl3,tsdl"
-        }
-      },
-      {
-        "target": "webgl",
+        "target": "web",
         "engine": "bucklescript",
-        "entry": "src/webgl.re"
+        "entry": "src/exampleEntrypoint.re"
+      }, {
+        "target": "native",
+        "engine": "native",
+        "entry": "src/exampleEntrypoint.re"
       }
     ]
   },
@@ -46,5 +43,8 @@
     "type": "git",
     "url": "git+https://github.com/bsansouci/ocaml-re.git"
   },
-  "author": "bsansouci & schmavery"
+  "author": "bsansouci & schmavery",
+  "devDependencies": {
+    "lerna": "2.0.0-beta.30"
+  }
 }

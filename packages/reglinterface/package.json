@@ -1,5 +1,5 @@
 {
-  "name": "regl",
+  "name": "reglinterface",
   "version": "0.1.1",
   "description": "Reason interface to GL.",
   "scripts": {

@@ -2,7 +2,6 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-
 open Tsdl;
 
 open Tgl3;
@@ -167,12 +166,13 @@ let module Gl = {
   type shaderT = int;
   let clearColor context::context r::r g::g b::b a::a => Gl.clear_color r g b a;
   let createProgram context::(context: contextT) :programT => Gl.create_program ();
-  let createShader context::(context: contextT) shaderType::shaderType :shaderT => Gl.create_shader shaderType;
+  let createShader context::(context: contextT) shaderType::shaderType :shaderT =>
+    Gl.create_shader shaderType;
   let attachShader context::context program::program shader::shader =>
     Gl.attach_shader program shader;
   let deleteShader context::context shader::shader => Gl.delete_shader shader;
   let shaderSource context::context shader::shader source::source =>
-    Gl.shader_source shader source;
+    Gl.shader_source shader ("#version 120 \n" ^ source);
   let compileShader context::context shader::shader => Gl.compile_shader shader;
   let linkProgram context::context program::program => Gl.link_program program;
   let useProgram context::context program::program => Gl.use_program program;
@@ -220,7 +220,8 @@ let module Gl = {
       name::name
       :attributeT =>
     Gl.get_attrib_location program name;
-  let enableVertexAttribArray context::(context: contextT) attribute::attribute => Gl.enable_vertex_attrib_array attribute;
+  let enableVertexAttribArray context::(context: contextT) attribute::attribute =>
+    Gl.enable_vertex_attrib_array attribute;
   let vertexAttribPointer
       context::(context: contextT)
       attribute::attribute
@@ -509,4 +510,3 @@ let module Gl = {
   let drawElements context::(context: contextT) mode::mode count::count type_::type_ offset::offset =>
     Gl.draw_elements mode count type_ (`Offset offset);
 };
-

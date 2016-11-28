@@ -2,7 +2,6 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-
 let module Document = {
   type element;
   type window;
@@ -142,7 +141,12 @@ let module Gl = {
   external clearColor : context::contextT => r::float => g::float => b::float => a::float => unit = "clearColor" [@@bs.send];
   external createProgram : context::contextT => programT = "createProgram" [@@bs.send];
   external createShader : context::contextT => shaderType::int => shaderT = "createShader" [@@bs.send];
-  external shaderSource : context::contextT => shader::shaderT => source::string => unit = "shaderSource" [@@bs.send];
+  external _shaderSource : context::contextT => shader::shaderT => source::string => unit = "shaderSource" [@@bs.send];
+  let shaderSource context::context shader::shader source::source =>
+    _shaderSource
+      context::context
+      shader::shader
+      source::("#version 100 \n precision highp float; \n" ^ source);
   external compileShader : context::contextT => shader::shaderT => unit = "compileShader" [@@bs.send];
   external attachShader : context::contextT => program::programT => shader::shaderT => unit = "attachShader" [@@bs.send];
   external deleteShader : context::contextT => shader::shaderT => unit = "deleteShader" [@@bs.send];
@@ -371,4 +375,3 @@ let module Gl = {
                           offset::int =>
                           unit = "drawElements" [@@bs.send];
 };
-
