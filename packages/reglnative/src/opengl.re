@@ -32,7 +32,7 @@ let create_window gl::(maj, min) => {
   )
 };
 
-let module Gl = {
+let module Gl : Reglinterface.Gl.t = {
   let target = "native";
   type contextT = Sdl.gl_context;
   module type WindowT = {
