@@ -38,7 +38,7 @@ external addToBody : 'canvas => unit = "document.body.appendChild" [@@bs.val];
 
 external getContext : 'canvas => string => 'context = "getContext" [@@bs.send];
 
-let module Gl = {
+let module Gl : Reglinterface.Gl.t = {
   let target = "web";
   type contextT;
   module type WindowT = {
