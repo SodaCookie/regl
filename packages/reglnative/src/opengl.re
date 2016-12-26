@@ -97,14 +97,14 @@ let module Gl : Reglinterface.Gl.t = {
       | DOWN
       | UP;
   };
-  type mouseDownT =
+  type mouseButtonEventT =
     button::Events.buttonStateT => state::Events.stateT => x::int => y::int => unit;
 
   /** See Gl.re for explanation. **/
   let render
       window::(window: Window.t)
-      mouseDown::(mouseDown: option mouseDownT)=?
-      mouseUp::(mouseUp: option mouseDownT)=?
+      mouseDown::(mouseDown: option mouseButtonEventT)=?
+      mouseUp::(mouseUp: option mouseButtonEventT)=?
       mouseMove::(mouseMove: option (x::int => y::int => unit))=?
       displayFunc::(displayFunc: float => unit)
       () => {
@@ -143,7 +143,7 @@ let module Gl : Reglinterface.Gl.t = {
               | 3 => Events.RIGHT_BUTTON
               | _ => failwith "Button not supported"
               };
-            cb button::button state::Events.DOWN x::x y::y;
+            cb button::button state::Events.UP x::x y::y;
             ()
           }
         | `Mouse_motion =>

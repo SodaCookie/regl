@@ -132,7 +132,7 @@ let module Gl : Reglinterface.Gl.t = {
               | 2 => Events.RIGHT_BUTTON
               | _ => assert false
               };
-            let state = Events.DOWN;
+            let state = Events.UP;
             let x = getClientX e;
             let y = getClientY e;
             cb button::button state::state x::x y::y
