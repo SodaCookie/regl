@@ -91,6 +91,7 @@ let module Gl : Reglinterface.Gl.t = {
   let render
       window::(window: Window.t)
       mouseDown::(mouseDown: option mouseDownT)=?
+      mouseUp::(mouseUp: option mouseDownT)=?
       mouseMove::(mouseMove: option (x::int => y::int => unit))=?
       displayFunc::(displayFunc: float => unit)
       () => {
@@ -100,6 +101,28 @@ let module Gl : Reglinterface.Gl.t = {
       Document.addEventListener
         window
         "mousedown"
+        (
+          fun e => {
+            let button =
+              switch (getButton e) {
+              | 0 => Events.LEFT_BUTTON
+              | 1 => Events.MIDDLE_BUTTON
+              | 2 => Events.RIGHT_BUTTON
+              | _ => assert false
+              };
+            let state = Events.DOWN;
+            let x = getClientX e;
+            let y = getClientY e;
+            cb button::button state::state x::x y::y
+          }
+        )
+    };
+    switch mouseUp {
+    | None => ()
+    | Some cb =>
+      Document.addEventListener
+        window
+        "mouseup"
         (
           fun e => {
             let button =

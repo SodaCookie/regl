@@ -104,6 +104,7 @@ let module Gl : Reglinterface.Gl.t = {
   let render
       window::(window: Window.t)
       mouseDown::(mouseDown: option mouseDownT)=?
+      mouseUp::(mouseUp: option mouseDownT)=?
       mouseMove::(mouseMove: option (x::int => y::int => unit))=?
       displayFunc::(displayFunc: float => unit)
       () => {
@@ -115,6 +116,22 @@ let module Gl : Reglinterface.Gl.t = {
         | `Quit => shouldQuit := true
         | `Mouse_button_down =>
           switch mouseDown {
+          | None => ()
+          | Some cb =>
+            let x = Sdl.Event.(get e mouse_button_x);
+            let y = Sdl.Event.(get e mouse_button_y);
+            let button =
+              switch Sdl.Event.(get e mouse_button_button) {
+              | 1 => Events.LEFT_BUTTON
+              | 2 => Events.MIDDLE_BUTTON
+              | 3 => Events.RIGHT_BUTTON
+              | _ => failwith "Button not supported"
+              };
+            cb button::button state::Events.DOWN x::x y::y;
+            ()
+          }
+        | `Mouse_button_up =>
+          switch mouseUp {
           | None => ()
           | Some cb =>
             let x = Sdl.Event.(get e mouse_button_x);

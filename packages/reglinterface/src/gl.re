@@ -36,6 +36,7 @@ module type t = {
   let render:
     window::Window.t =>
     mouseDown::(button::Events.buttonStateT => state::Events.stateT => x::int => y::int => unit)? =>
+    mouseUp::(button::Events.buttonStateT => state::Events.stateT => x::int => y::int => unit)? =>
     mouseMove::(x::int => y::int => unit)? =>
     displayFunc::(float => unit) =>
     unit =>
@@ -114,4 +115,3 @@ module type t = {
   let drawElements:
     context::contextT => mode::int => count::int => type_::int => offset::int => unit;
 };
-
