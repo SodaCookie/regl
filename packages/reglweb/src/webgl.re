@@ -84,13 +84,14 @@ let module Gl : Reglinterface.Gl.t = {
       | DOWN
       | UP;
   };
-  type mouseDownT =
+  type mouseButtonEventT =
     button::Events.buttonStateT => state::Events.stateT => x::int => y::int => unit;
 
   /** See Gl.re for explanation. **/
   let render
       window::(window: Window.t)
-      mouseDown::(mouseDown: option mouseDownT)=?
+      mouseDown::(mouseDown: option mouseButtonEventT)=?
+      mouseUp::(mouseUp: option mouseButtonEventT)=?
       mouseMove::(mouseMove: option (x::int => y::int => unit))=?
       displayFunc::(displayFunc: float => unit)
       () => {
@@ -110,6 +111,28 @@ let module Gl : Reglinterface.Gl.t = {
               | _ => assert false
               };
             let state = Events.DOWN;
+            let x = getClientX e;
+            let y = getClientY e;
+            cb button::button state::state x::x y::y
+          }
+        )
+    };
+    switch mouseUp {
+    | None => ()
+    | Some cb =>
+      Document.addEventListener
+        window
+        "mouseup"
+        (
+          fun e => {
+            let button =
+              switch (getButton e) {
+              | 0 => Events.LEFT_BUTTON
+              | 1 => Events.MIDDLE_BUTTON
+              | 2 => Events.RIGHT_BUTTON
+              | _ => assert false
+              };
+            let state = Events.UP;
             let x = getClientX e;
             let y = getClientY e;
             cb button::button state::state x::x y::y
