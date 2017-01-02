@@ -106,6 +106,7 @@ let module Gl : Reglinterface.Gl.t = {
       mouseDown::(mouseDown: option mouseButtonEventT)=?
       mouseUp::(mouseUp: option mouseButtonEventT)=?
       mouseMove::(mouseMove: option (x::int => y::int => unit))=?
+      windowResize::(windowResize: option (unit => unit))=?
       displayFunc::(displayFunc: float => unit)
       () => {
     let e = Sdl.Event.create ();
@@ -155,6 +156,17 @@ let module Gl : Reglinterface.Gl.t = {
             cb x::x y::y;
             ()
           }
+          | `Window_event =>
+            switch windowResize {
+            | None => ()
+            | Some cb =>
+              switch Sdl.Event.(window_event_enum (get e window_event_id)){
+                | `Resized
+                | `Maximized
+                | `Restored => cb ()
+                | _ => ()
+              }
+            }
         | _ => ()
         }
       };

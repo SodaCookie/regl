@@ -93,6 +93,7 @@ let module Gl : Reglinterface.Gl.t = {
       mouseDown::(mouseDown: option mouseButtonEventT)=?
       mouseUp::(mouseUp: option mouseButtonEventT)=?
       mouseMove::(mouseMove: option (x::int => y::int => unit))=?
+      windowResize::(windowResize: option (unit => unit))=?
       displayFunc::(displayFunc: float => unit)
       () => {
     switch mouseDown {
