@@ -153,11 +153,12 @@ let module Gl : Reglinterface.Gl.t = {
           }
         )
     };
-    let rec tick () => {
-      displayFunc (Document.now ());
-      Document.requestAnimationFrame tick
+    let rec tick prev () => {
+      let now = Document.now ();
+      displayFunc (now -. prev);
+      Document.requestAnimationFrame (tick now)
     };
-    Document.requestAnimationFrame tick
+    Document.requestAnimationFrame (tick (Document.now ()))
   };
   type programT;
   type shaderT;
