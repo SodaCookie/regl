@@ -1,6 +1,6 @@
 {
   "name": "reglnative",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Reason bindings to OpenGL",
   "scripts": {
     "postinstall": "eval $(dependencyEnv) && mkdir -p _build/src/ && gcc -I`ocamlc -where` -c src/soil_wrapper.c -o _build/src/libsoil_wrapper.a && cd SOIL/projects/makefile && mkdir -p obj && mkdir -p ../../lib && make && cd ../../../ && mkdir -p _build/SOIL/lib/ && mv SOIL/lib/libSOIL.a _build/SOIL/lib/libSOIL.a && node setcurrentdir.js",
