@@ -1,6 +1,6 @@
 {
   "name": "reglweb",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Reason bindings to WebGL",
   "scripts": {
     "start": "_build/src/app.out",
@@ -24,7 +24,7 @@
     "bs-platform": "https://github.com/bloomberg/bucklescript.git",
     "rebel-bin": "https://github.com/bsansouci/rebel-bin.git",
     "webpack": "*",
-    "reglinterface": "^0.1.4"
+    "reglinterface": "^0.1.5"
   },
   "rebel": {},
   "author": "bsansouci & schmavery",
