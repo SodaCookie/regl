@@ -2,6 +2,28 @@ let triangles = 4;
 
 let triangle_strip = 5;
 
+let texture0 = 33984;
+
+let texture1 = 33985;
+
+let texture2 = 33986;
+
+let texture_2d = 3553;
+
+let blend = 3042;
+
+let src_alpha = 770;
+
+let one_minus_src_alpha = 771;
+
+let dst_alpha = 772;
+
+let depth_test = 2929;
+
+let rgb = 6407;
+
+let rgba = 6408;
+
 let triangle_fan = 6;
 
 let array_buffer = 34962;
@@ -23,6 +45,8 @@ let buffer_size = 34660;
 let buffer_usage = 34661;
 
 let float_ = 5126;
+
+let unsigned_int = 5125;
 
 let current_vertex_attrib = 34342;
 
@@ -130,6 +154,14 @@ let stencil_buffer_bit = 1024;
 
 let color_buffer_bit = 16384;
 
-let unsigned_short = 0x1403;
+let unsigned_short = 5123;
 
-let unsigned_byte = 0x1401;
+let unsigned_byte = 5121;
+
+let texture_mag_filter = 10240;
+
+let texture_min_filter = 10241;
+
+let linear = 9729;
+
+let linear_mipmap_nearest = 9985;

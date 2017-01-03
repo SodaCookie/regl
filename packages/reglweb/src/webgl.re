@@ -2,7 +2,7 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-let module Document = {
+module Document = {
   type element;
   type window;
   let window: window = [%bs.raw "window"];
@@ -38,7 +38,7 @@ external addToBody : 'canvas => unit = "document.body.appendChild" [@@bs.val];
 
 external getContext : 'canvas => string => 'context = "getContext" [@@bs.send];
 
-let module Gl : Reglinterface.Gl.t = {
+module Gl: Reglinterface.Gl.t = {
   let target = "web";
   type contextT;
   module type WindowT = {
@@ -50,7 +50,7 @@ let module Gl : Reglinterface.Gl.t = {
     let initDisplayMode: window::t => double_buffer::bool => unit => unit;
     let getContext: t => contextT;
   };
-  let module Window = {
+  module Window = {
     type t;
     let getWidth = getWidth;
     let getHeight = getHeight;
@@ -59,11 +59,11 @@ let module Gl : Reglinterface.Gl.t = {
       addToBody canvas;
       canvas
     };
-    let setWindowSize window::(window: t) width::width height::height => {
+    let setWindowSize window::(window: t) ::width ::height => {
       setWidth window width;
       setHeight window height
     };
-    let initDisplayMode window::window double_buffer::_ () => ();
+    let initDisplayMode ::window double_buffer::_ () => ();
     let getContext (window: t) :contextT => getContext window "webgl";
   };
   module type EventsT = {
@@ -75,7 +75,7 @@ let module Gl : Reglinterface.Gl.t = {
       | DOWN
       | UP;
   };
-  let module Events = {
+  module Events = {
     type buttonStateT =
       | LEFT_BUTTON
       | MIDDLE_BUTTON
@@ -114,7 +114,7 @@ let module Gl : Reglinterface.Gl.t = {
             let state = Events.DOWN;
             let x = getClientX e;
             let y = getClientY e;
-            cb button::button state::state x::x y::y
+            cb ::button ::state ::x ::y
           }
         )
     };
@@ -136,7 +136,7 @@ let module Gl : Reglinterface.Gl.t = {
             let state = Events.UP;
             let x = getClientX e;
             let y = getClientY e;
-            cb button::button state::state x::x y::y
+            cb ::button ::state ::x ::y
           }
         )
     };
@@ -150,7 +150,7 @@ let module Gl : Reglinterface.Gl.t = {
           fun e => {
             let x = getClientX e;
             let y = getClientY e;
-            cb x::x y::y
+            cb ::x ::y
           }
         )
     };
@@ -167,11 +167,9 @@ let module Gl : Reglinterface.Gl.t = {
   external createProgram : context::contextT => programT = "createProgram" [@@bs.send];
   external createShader : context::contextT => shaderType::int => shaderT = "createShader" [@@bs.send];
   external _shaderSource : context::contextT => shader::shaderT => source::string => unit = "shaderSource" [@@bs.send];
-  let shaderSource context::context shader::shader source::source =>
+  let shaderSource ::context ::shader ::source =>
     _shaderSource
-      context::context
-      shader::shader
-      source::("#version 100 \n precision highp float; \n" ^ source);
+      ::context ::shader source::("#version 100 \n precision highp float; \n" ^ source);
   external compileShader : context::contextT => shader::shaderT => unit = "compileShader" [@@bs.send];
   external attachShader : context::contextT => program::programT => shader::shaderT => unit = "attachShader" [@@bs.send];
   external deleteShader : context::contextT => shader::shaderT => unit = "deleteShader" [@@bs.send];
@@ -182,6 +180,93 @@ let module Gl : Reglinterface.Gl.t = {
   type uniformT;
   external createBuffer : context::contextT => bufferT = "createBuffer" [@@bs.send];
   external bindBuffer : context::contextT => target::int => buffer::bufferT => unit = "bindBuffer" [@@bs.send];
+  type textureT;
+  external createTexture : context::contextT => textureT = "createTexture" [@@bs.send];
+  external activeTexture : context::contextT => target::int => unit = "activeTexture" [@@bs.send];
+  external bindTexture : context::contextT => target::int => texture::textureT => unit = "bindTexture" [@@bs.send];
+  external texParameteri : context::contextT => target::int => pname::int => param::int => unit = "texParameteri" [@@bs.send];
+  type rawTextureDataT = array int;
+  external makeUint8Array : array int => rawTextureDataT = "Uint8Array" [@@bs.new];
+  let toTextureData data => makeUint8Array data;
+  external enable : context::contextT => int => unit = "enable" [@@bs.send];
+  external disable : context::contextT => int => unit = "disable" [@@bs.send];
+  external blendFunc : context::contextT => int => int => unit = "blendFunc" [@@bs.send];
+  type imageT;
+  external getImageWidth : imageT => int = "width" [@@bs.get];
+  external getImageHeight : imageT => int = "height" [@@bs.get];
+  type loadOptionT =
+    | LoadAuto
+    | LoadL
+    | LoadLA
+    | LoadRGB
+    | LoadRGBA;
+
+  /** makeImage, setSrc and addEventListener are three helpers for loadImage. */
+  external makeImage : unit => imageT = "Image" [@@bs.new];
+  /* TODO: when the type of bs.set is `imageT => unit` you get something like
+
+      node_modules/reglweb/src/webgl.re:
+        Bsppx.Location.Error(_)
+        File "node_modules/reglweb/src/webgl.re", line 1:
+        Error: Error while running external preprocessor
+        Command line: bsppx.exe '/var/folders/g_/v45pqsrn65xbszd33yvd8lj40000gn/T/camlppx129341' '/var/folders/g_/v45pqsrn65xbszd33yvd8lj40000gn/T/camlppx438846'
+
+        This is due to the fact that bsppx expects 2 args, the "this" and the new value to set.
+
+        We should open an issue in Buckelscript.
+     */
+  external setSrc : imageT => string => unit = "src" [@@bs.set];
+  external addEventListener : imageT => string => (unit => unit) => unit = "addEventListener" [@@bs.send];
+
+  /** TODO: We don't care about forcing load option for web images (we do allow it for native as SOIL supports
+      it). We should probably not do this... */
+  let loadImage ::filename ::loadOption ::callback () =>
+    switch loadOption {
+    | _ =>
+      let image = makeImage ();
+      setSrc image filename;
+      addEventListener image "load" (fun () => callback (Some image))
+    };
+  external _texImage2DWithImage : context::contextT =>
+                                  target::int =>
+                                  level::int =>
+                                  internalFormat::int =>
+                                  format::int =>
+                                  type_::int =>
+                                  image::imageT =>
+                                  unit = "texImage2D" [@@bs.send];
+  let texImage2DWithImage ::context ::target ::level ::image =>
+    _texImage2DWithImage
+      context
+      target
+      level
+      Reglinterface.Constants.rgba
+      Reglinterface.Constants.rgba
+      Reglinterface.Constants.unsigned_byte
+      image;
+  external _texImage2D : context::contextT =>
+                         target::int =>
+                         level::int =>
+                         internalFormat::int =>
+                         width::int =>
+                         height::int =>
+                         border::int =>
+                         format::int =>
+                         type_::int =>
+                         data::rawTextureDataT =>
+                         unit = "texImage2D" [@@bs.send];
+  let texImage2D
+      ::context
+      ::target
+      ::level
+      ::internalFormat
+      ::width
+      ::height
+      ::format
+      ::type_
+      ::data =>
+    _texImage2D context target level internalFormat width height 0 format type_ data;
+  external generateMipmap : context::contextT => target::int => unit = "generateMipmap" [@@bs.send];
 
   /** Those types are what allows to come close to some form of ad-hoc polymorphism
    *  See the Bucklescript manual:
@@ -199,12 +284,10 @@ let module Gl : Reglinterface.Gl.t = {
   external createFloat32Array : array float => 'float32Array = "Float32Array" [@@bs.new];
   external createUint16Array : array int => 'uint16Array = "Uint16Array" [@@bs.new];
   external _bufferData : context::contextT => target::int => data::array 'a => usage::int => unit = "bufferData" [@@bs.send];
-  let bufferData context::context target::target data::data usage::usage =>
+  let bufferData ::context ::target ::data ::usage =>
     switch data {
-    | Float32 x =>
-      _bufferData context::context target::target data::(createFloat32Array x) usage::usage
-    | UInt16 x =>
-      _bufferData context::context target::target data::(createUint16Array x) usage::usage
+    | Float32 x => _bufferData ::context ::target data::(createFloat32Array x) ::usage
+    | UInt16 x => _bufferData ::context ::target data::(createUint16Array x) ::usage
     };
   external viewport : context::contextT => x::int => y::int => width::int => height::int => unit = "viewport" [@@bs.send];
   external clear : context::contextT => mask::int => unit = "clear" [@@bs.send];
@@ -219,23 +302,9 @@ let module Gl : Reglinterface.Gl.t = {
                                   stride::int =>
                                   offset::int =>
                                   unit = "vertexAttribPointer" [@@bs.send];
-  let vertexAttribPointer
-      context::context
-      attribute::attribute
-      size::size
-      type_::type_
-      normalize::normalize
-      stride::stride
-      offset::offset => {
+  let vertexAttribPointer ::context ::attribute ::size ::type_ ::normalize ::stride ::offset => {
     let normalize = if normalize {Js.true_} else {Js.false_};
-    _vertexAttribPointer
-      context::context
-      attribute::attribute
-      size::size
-      type_::type_
-      normalize::normalize
-      stride::stride
-      offset::offset
+    _vertexAttribPointer ::context ::attribute ::size ::type_ ::normalize ::stride ::offset
   };
   module type Mat4T = {
     type t;
@@ -255,7 +324,7 @@ let module Gl : Reglinterface.Gl.t = {
       far::float =>
       unit;
   };
-  let module Mat4: Mat4T = {
+  module Mat4: Mat4T = {
     type t = array float;
     let to_array a => a;
     external create : unit => t = "mat4.create" [@@bs.val];
@@ -272,13 +341,15 @@ let module Gl : Reglinterface.Gl.t = {
                      far::float =>
                      unit = "mat4.ortho" [@@bs.val];
   };
+  external uniform1i : context::contextT => location::uniformT => int => unit = "uniform1i" [@@bs.send];
+  external uniform1f : context::contextT => location::uniformT => float => unit = "uniform1f" [@@bs.send];
   external _uniformMatrix4fv : context::contextT =>
                                location::uniformT =>
                                transpose::Js.boolean =>
                                value::Mat4.t =>
                                unit = "uniformMatrix4fv" [@@bs.send];
-  let uniformMatrix4fv context::context location::location value::value =>
-    _uniformMatrix4fv context::context location::location transpose::Js.false_ value::value;
+  let uniformMatrix4fv ::context ::location ::value =>
+    _uniformMatrix4fv ::context ::location transpose::Js.false_ ::value;
   /* Can return other value types as well, see https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Types */
   type shaderParamsInternalT 'a =
     | Shader_delete_status_internal :shaderParamsInternalT bool
@@ -312,15 +383,12 @@ let module Gl : Reglinterface.Gl.t = {
                                   paramName::int =>
                                   (programParamsInternalT 'a) [@bs.ignore] =>
                                   'a = "getProgramParameter" [@@bs.send];
-  let getProgramParameter context::context program::program paramName::paramName =>
+  let getProgramParameter ::context ::program ::paramName =>
     switch paramName {
     | Program_delete_status =>
       if (
         _getProgramParameter
-          context::context
-          program::program
-          paramName::(deleteStatus context::context)
-          Program_delete_status_internal
+          ::context ::program paramName::(deleteStatus ::context) Program_delete_status_internal
       ) {
         1
       } else {
@@ -329,10 +397,7 @@ let module Gl : Reglinterface.Gl.t = {
     | Link_status =>
       if (
         _getProgramParameter
-          context::context
-          program::program
-          paramName::(linkStatus context::context)
-          Link_status_internal
+          ::context ::program paramName::(linkStatus ::context) Link_status_internal
       ) {
         1
       } else {
@@ -341,10 +406,7 @@ let module Gl : Reglinterface.Gl.t = {
     | Validate_status =>
       if (
         _getProgramParameter
-          context::context
-          program::program
-          paramName::(validateStatus context::context)
-          Validate_status_internal
+          ::context ::program paramName::(validateStatus ::context) Validate_status_internal
       ) {
         1
       } else {
@@ -356,15 +418,12 @@ let module Gl : Reglinterface.Gl.t = {
                                  paramName::int =>
                                  (shaderParamsInternalT 'a) [@bs.ignore] =>
                                  'a = "getShaderParameter" [@@bs.send];
-  let getShaderParameter context::context shader::shader paramName::paramName =>
+  let getShaderParameter ::context ::shader ::paramName =>
     switch paramName {
     | Shader_delete_status =>
       if (
         _getShaderParameter
-          context::context
-          shader::shader
-          paramName::(deleteStatus context::context)
-          Shader_delete_status_internal
+          ::context ::shader paramName::(deleteStatus ::context) Shader_delete_status_internal
       ) {
         1
       } else {
@@ -373,21 +432,14 @@ let module Gl : Reglinterface.Gl.t = {
     | Compile_status =>
       if (
         _getShaderParameter
-          context::context
-          shader::shader
-          paramName::(compileStatus context::context)
-          Compile_status_internal
+          ::context ::shader paramName::(compileStatus ::context) Compile_status_internal
       ) {
         1
       } else {
         0
       }
     | Shader_type =>
-      _getShaderParameter
-        context::context
-        shader::shader
-        paramName::(shaderType context::context)
-        Shader_type_internal
+      _getShaderParameter ::context ::shader paramName::(shaderType ::context) Shader_type_internal
     };
   external getShaderInfoLog : context::contextT => shader::shaderT => string = "getShaderInfoLog" [@@bs.send];
   external getProgramInfoLog : context::contextT => program::programT => string = "getProgramInfoLog" [@@bs.send];

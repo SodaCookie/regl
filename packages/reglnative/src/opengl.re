@@ -32,7 +32,7 @@ let create_window gl::(maj, min) => {
   )
 };
 
-let module Gl : Reglinterface.Gl.t = {
+module Gl: Reglinterface.Gl.t = {
   let target = "native";
   type contextT = Sdl.gl_context;
   module type WindowT = {
@@ -44,7 +44,7 @@ let module Gl : Reglinterface.Gl.t = {
     let initDisplayMode: window::t => double_buffer::bool => unit => unit;
     let getContext: t => contextT;
   };
-  let module Window = {
+  module Window = {
     type t = Sdl.window;
     let getWidth (window: t) => {
       let (width, _) = Sdl.get_window_size window;
@@ -66,9 +66,9 @@ let module Gl : Reglinterface.Gl.t = {
       | Ok win => win
       | Error (`Msg e) => failwith e
       };
-    let setWindowSize window::(window: t) width::width height::height =>
+    let setWindowSize window::(window: t) ::width ::height =>
       Sdl.set_window_size window width height;
-    let initDisplayMode window::window double_buffer::_ () => ();
+    let initDisplayMode ::window double_buffer::_ () => ();
     let getContext (window: t) :contextT =>
       switch (
         Sdl.gl_create_context window >>= (
@@ -88,7 +88,7 @@ let module Gl : Reglinterface.Gl.t = {
       | DOWN
       | UP;
   };
-  let module Events = {
+  module Events = {
     type buttonStateT =
       | LEFT_BUTTON
       | MIDDLE_BUTTON
@@ -128,7 +128,7 @@ let module Gl : Reglinterface.Gl.t = {
               | 3 => Events.RIGHT_BUTTON
               | _ => failwith "Button not supported"
               };
-            cb button::button state::Events.DOWN x::x y::y;
+            cb ::button state::Events.DOWN ::x ::y;
             ()
           }
         | `Mouse_button_up =>
@@ -144,7 +144,7 @@ let module Gl : Reglinterface.Gl.t = {
               | 3 => Events.RIGHT_BUTTON
               | _ => failwith "Button not supported"
               };
-            cb button::button state::Events.UP x::x y::y;
+            cb ::button state::Events.UP ::x ::y;
             ()
           }
         | `Mouse_motion =>
@@ -153,20 +153,20 @@ let module Gl : Reglinterface.Gl.t = {
           | Some cb =>
             let x = Sdl.Event.(get e mouse_motion_x);
             let y = Sdl.Event.(get e mouse_motion_y);
-            cb x::x y::y;
+            cb ::x ::y;
             ()
           }
-          | `Window_event =>
-            switch windowResize {
-            | None => ()
-            | Some cb =>
-              switch Sdl.Event.(window_event_enum (get e window_event_id)){
-                | `Resized
-                | `Maximized
-                | `Restored => cb ()
-                | _ => ()
-              }
+        | `Window_event =>
+          switch windowResize {
+          | None => ()
+          | Some cb =>
+            switch Sdl.Event.(window_event_enum (get e window_event_id)){
+              | `Resized
+              | `Maximized
+              | `Restored => cb ()
+              | _ => ()
             }
+          }
         | _ => ()
         }
       };
@@ -193,18 +193,17 @@ let module Gl : Reglinterface.Gl.t = {
   };
   type programT = int;
   type shaderT = int;
-  let clearColor context::context r::r g::g b::b a::a => Gl.clear_color r g b a;
+  let clearColor ::context ::r ::g ::b ::a => Gl.clear_color r g b a;
   let createProgram context::(context: contextT) :programT => Gl.create_program ();
-  let createShader context::(context: contextT) shaderType::shaderType :shaderT =>
+  let createShader context::(context: contextT) ::shaderType :shaderT =>
     Gl.create_shader shaderType;
-  let attachShader context::context program::program shader::shader =>
-    Gl.attach_shader program shader;
-  let deleteShader context::context shader::shader => Gl.delete_shader shader;
-  let shaderSource context::context shader::shader source::source =>
+  let attachShader ::context ::program ::shader => Gl.attach_shader program shader;
+  let deleteShader ::context ::shader => Gl.delete_shader shader;
+  let shaderSource ::context ::shader ::source =>
     Gl.shader_source shader ("#version 120 \n" ^ source);
-  let compileShader context::context shader::shader => Gl.compile_shader shader;
-  let linkProgram context::context program::program => Gl.link_program program;
-  let useProgram context::context program::program => Gl.use_program program;
+  let compileShader ::context ::shader => Gl.compile_shader shader;
+  let linkProgram ::context ::program => Gl.link_program program;
+  let useProgram ::context ::program => Gl.use_program program;
   type bufferT = Gl.enum;
   type attributeT = int;
   type uniformT = int;
@@ -220,12 +219,98 @@ let module Gl : Reglinterface.Gl.t = {
       Int32.to_int a.{0}
     }
   };
-  let bindBuffer context::(context: contextT) target::target buffer::buffer =>
-    Gl.bind_buffer target buffer;
+  let bindBuffer context::(context: contextT) ::target ::buffer => Gl.bind_buffer target buffer;
+  type textureT = Gl.enum;
+  let createTexture = {
+    let a = Bigarray.Array1.create Bigarray.int32 Bigarray.c_layout 1;
+    fun context::(context: contextT) => {
+      Gl.gen_textures 1 a;
+      Int32.to_int a.{0}
+    }
+  };
+  let activeTexture ::context ::target => Gl.active_texture target;
+  let bindTexture ::context ::target ::texture => Gl.bind_texture target texture;
+  let texParameteri context::contextT ::target ::pname ::param =>
+    Gl.tex_parameteri target pname param;
+  type rawTextureDataT = array int;
+  let toTextureData data => data;
+  let enable ::context i => Gl.enable i;
+  let disable ::context i => Gl.disable i;
+  let blendFunc ::context a b => Gl.blend_func a b;
+  type loadOptionT =
+    | LoadAuto
+    | LoadL
+    | LoadLA
+    | LoadRGB
+    | LoadRGBA;
+  type imageT = {width: int, height: int, channels: int, data: array int};
+  let getImageWidth image => image.width;
+  let getImageHeight image => image.height;
+
+  /**
+   * Internal dep on SOIL. This helps us load a bunch of different formats of image and get a `unsigned char*`
+   * which we transform into an `array int` and then a bigarray before passing it to tgls.
+   *
+   * This is very unefficient as we end we 3 copies of the data (1 original and 2 copies). We should be able
+   * to pass in the C `char*` directly to tgls if we can figure out how ctypes works.
+   */
+  external soilLoadImage : filename::string => loadOption::int => option imageT = "load_image";
+  let loadImage ::filename ::loadOption ::callback () =>
+    switch loadOption {
+    /* By default force RGBA */
+    | None => callback (soilLoadImage ::filename loadOption::4)
+    | Some LoadAuto => callback (soilLoadImage ::filename loadOption::0)
+    | Some LoadL => callback (soilLoadImage ::filename loadOption::1)
+    | Some LoadLA => callback (soilLoadImage ::filename loadOption::2)
+    | Some LoadRGB => callback (soilLoadImage ::filename loadOption::3)
+    | Some LoadRGBA => callback (soilLoadImage ::filename loadOption::4)
+    };
+  let texImage2D
+      context::(context: contextT)
+      ::target
+      ::level
+      ::internalFormat
+      ::width
+      ::height
+      ::format
+      ::type_
+      ::data =>
+    Gl.tex_image2d
+      target
+      level
+      internalFormat
+      width
+      height
+      0
+      format
+      type_
+      (`Data (Bigarray.Array1.of_array Bigarray.int8_unsigned Bigarray.c_layout data));
+  let texImage2DWithImage ::context ::target ::level ::image => {
+    /* We only support rgb and rgba for now. */
+    let format =
+      switch image.channels {
+      | 3 => Reglinterface.Constants.rgb
+      | 4 => Reglinterface.Constants.rgba
+      | _ => assert false
+      };
+    texImage2D
+      context
+      target
+      level
+      format
+      image.width
+      image.height
+      format
+      Reglinterface.Constants.unsigned_byte
+      image.data
+  };
+  let uniform1i ::context ::location v0 => Gl.uniform1i location v0;
+  let uniform1f ::context ::location v0 => Gl.uniform1f location v0;
+  let generateMipmap ::context ::target => Gl.generate_mipmap target;
   let createFloat32Array data => Bigarray.Array1.of_array Bigarray.float32 Bigarray.c_layout data;
   let createUint16Array data =>
     Bigarray.Array1.of_array Bigarray.int16_unsigned Bigarray.c_layout data;
-  let bufferData context::(context: contextT) target::target data::(data: dataKind) usage::usage =>
+  let bufferData context::(context: contextT) ::target data::(data: dataKind) ::usage =>
     switch data {
     | Float32 d =>
       let bigData = createFloat32Array d;
@@ -234,31 +319,27 @@ let module Gl : Reglinterface.Gl.t = {
       let bigData = createUint16Array d;
       Gl.buffer_data target (Gl.bigarray_byte_size bigData) (Some bigData) usage
     };
-  let viewport context::(context: contextT) x::x y::y width::width height::height =>
+  let viewport context::(context: contextT) ::x ::y ::width ::height =>
     Gl.viewport x y width height;
-  let clear context::(context: contextT) mask::mask => Gl.clear mask;
-  let getUniformLocation
-      context::(context: contextT)
-      program::(program: programT)
-      name::name
-      :uniformT =>
+  let clear context::(context: contextT) ::mask => Gl.clear mask;
+  let getUniformLocation context::(context: contextT) program::(program: programT) ::name :uniformT =>
     Gl.get_uniform_location program name;
   let getAttribLocation
       context::(context: contextT)
       program::(program: programT)
-      name::name
+      ::name
       :attributeT =>
     Gl.get_attrib_location program name;
-  let enableVertexAttribArray context::(context: contextT) attribute::attribute =>
+  let enableVertexAttribArray context::(context: contextT) ::attribute =>
     Gl.enable_vertex_attrib_array attribute;
   let vertexAttribPointer
       context::(context: contextT)
-      attribute::attribute
-      size::size
-      type_::type_
-      normalize::normalize
-      stride::stride
-      offset::offset =>
+      ::attribute
+      ::size
+      ::type_
+      ::normalize
+      ::stride
+      ::offset =>
     /* For now `offset` is only going to be an offset (limited by the webgl API?). */
     Gl.vertex_attrib_pointer attribute size type_ normalize stride (`Offset offset);
   module type Mat4T = {
@@ -279,7 +360,7 @@ let module Gl : Reglinterface.Gl.t = {
       far::float =>
       unit;
   };
-  let module Mat4: Mat4T = {
+  module Mat4: Mat4T = {
     type t = array float;
     let to_array a => a;
     let epsilon = 0.00001;
@@ -467,7 +548,7 @@ let module Gl : Reglinterface.Gl.t = {
   /** count = 1 for now https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
    * and transform = false because "Must be GL_FALSE"...
    */
-  let uniformMatrix4fv context::(context: contextT) location::location value::value =>
+  let uniformMatrix4fv context::(context: contextT) ::location ::value =>
     Gl.uniform_matrix4fv location 1 false (createFloat32Array (Mat4.to_array value));
   type shaderParamsT =
     | Shader_delete_status
@@ -483,59 +564,50 @@ let module Gl : Reglinterface.Gl.t = {
    */
   let _getProgramParameter = {
     let a = Bigarray.Array1.create Bigarray.int32 Bigarray.c_layout 1;
-    fun context::(context: contextT) program::(program: programT) paramName::paramName => {
+    fun context::(context: contextT) program::(program: programT) ::paramName => {
       Gl.get_programiv program paramName a;
       Int32.to_int a.{0}
     }
   };
-  let getProgramParameter
-      context::(context: contextT)
-      program::(program: programT)
-      paramName::paramName =>
+  let getProgramParameter context::(context: contextT) program::(program: programT) ::paramName =>
     switch paramName {
-    | Program_delete_status =>
-      _getProgramParameter context::context program::program paramName::Gl.delete_status
-    | Link_status =>
-      _getProgramParameter context::context program::program paramName::Gl.link_status
-    | Validate_status =>
-      _getProgramParameter context::context program::program paramName::Gl.validate_status
+    | Program_delete_status => _getProgramParameter ::context ::program paramName::Gl.delete_status
+    | Link_status => _getProgramParameter ::context ::program paramName::Gl.link_status
+    | Validate_status => _getProgramParameter ::context ::program paramName::Gl.validate_status
     };
   let _getShaderParameter = {
     let a = Bigarray.Array1.create Bigarray.int32 Bigarray.c_layout 1;
-    fun context::(context: contextT) shader::shader paramName::paramName => {
+    fun context::(context: contextT) ::shader ::paramName => {
       Gl.get_shaderiv shader paramName a;
       Int32.to_int a.{0}
     }
   };
-  let getShaderParameter context::(context: contextT) shader::shader paramName::paramName =>
+  let getShaderParameter context::(context: contextT) ::shader ::paramName =>
     switch paramName {
-    | Shader_delete_status =>
-      _getShaderParameter context::context shader::shader paramName::Gl.delete_status
-    | Compile_status =>
-      _getShaderParameter context::context shader::shader paramName::Gl.compile_status
-    | Shader_type => _getShaderParameter context::context shader::shader paramName::Gl.shader_type
+    | Shader_delete_status => _getShaderParameter ::context ::shader paramName::Gl.delete_status
+    | Compile_status => _getShaderParameter ::context ::shader paramName::Gl.compile_status
+    | Shader_type => _getShaderParameter ::context ::shader paramName::Gl.shader_type
     };
-  let getShaderInfoLog context::(context: contextT) shader::shader => {
-    let len = _getShaderParameter context::context shader::shader paramName::Gl.info_log_length;
+  let getShaderInfoLog context::(context: contextT) ::shader => {
+    let len = _getShaderParameter ::context ::shader paramName::Gl.info_log_length;
     let logData = Bigarray.Array1.create Bigarray.Char Bigarray.c_layout len;
     Gl.get_shader_info_log shader len None logData;
     Gl.string_of_bigarray logData
   };
-  let getProgramInfoLog context::(context: contextT) program::program => {
-    let len = _getProgramParameter context::context program::program paramName::Gl.info_log_length;
+  let getProgramInfoLog context::(context: contextT) ::program => {
+    let len = _getProgramParameter ::context ::program paramName::Gl.info_log_length;
     let logData = Bigarray.Array1.create Bigarray.Char Bigarray.c_layout len;
     Gl.get_program_info_log program len None logData;
     Gl.string_of_bigarray logData
   };
   let getShaderSource context::(context: contextT) shader::(shader: shaderT) => {
-    let len =
-      _getShaderParameter context::context shader::shader paramName::Gl.shader_source_length;
+    let len = _getShaderParameter ::context ::shader paramName::Gl.shader_source_length;
     let logData = Bigarray.Array1.create Bigarray.Char Bigarray.c_layout len;
     Gl.get_shader_source shader len None logData;
     Gl.string_of_bigarray logData
   };
-  let drawArrays context::(context: contextT) mode::mode first::first count::count =>
+  let drawArrays context::(context: contextT) ::mode ::first ::count =>
     Gl.draw_arrays mode first count;
-  let drawElements context::(context: contextT) mode::mode count::count type_::type_ offset::offset =>
+  let drawElements context::(context: contextT) ::mode ::count ::type_ ::offset =>
     Gl.draw_elements mode count type_ (`Offset offset);
 };

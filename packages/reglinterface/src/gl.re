@@ -2,7 +2,6 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-
 module type t = {
   let target: string;
   type contextT;
@@ -15,7 +14,7 @@ module type t = {
     let initDisplayMode: window::t => double_buffer::bool => unit => unit;
     let getContext: t => contextT;
   };
-  let module Window: WindowT;
+  module Window: WindowT;
   module type EventsT = {
     type buttonStateT =
       | LEFT_BUTTON
@@ -25,7 +24,7 @@ module type t = {
       | DOWN
       | UP;
   };
-  let module Events: EventsT;
+  module Events: EventsT;
 
   /** We're currently mimicking the JS asynchronous event handling allowing the user to register callbacks.
    * Instead of mutating global state in the Events module, we simply force the user to register all events
@@ -38,7 +37,6 @@ module type t = {
     mouseDown::(button::Events.buttonStateT => state::Events.stateT => x::int => y::int => unit)? =>
     mouseUp::(button::Events.buttonStateT => state::Events.stateT => x::int => y::int => unit)? =>
     mouseMove::(x::int => y::int => unit)? =>
-    windowResize::(unit => unit)? =>
     displayFunc::(float => unit) =>
     unit =>
     unit;
@@ -58,6 +56,46 @@ module type t = {
   type uniformT;
   let createBuffer: context::contextT => bufferT;
   let bindBuffer: context::contextT => target::int => buffer::bufferT => unit;
+  type textureT;
+  let createTexture: context::contextT => textureT;
+  let activeTexture: context::contextT => target::int => unit;
+  let bindTexture: context::contextT => target::int => texture::textureT => unit;
+  let texParameteri: context::contextT => target::int => pname::int => param::int => unit;
+  type rawTextureDataT;
+  let toTextureData: array int => rawTextureDataT;
+  let enable: context::contextT => int => unit;
+  let disable: context::contextT => int => unit;
+  let blendFunc: context::contextT => int => int => unit;
+  type imageT;
+  let getImageWidth: imageT => int;
+  let getImageHeight: imageT => int;
+  type loadOptionT =
+    | LoadAuto
+    | LoadL
+    | LoadLA
+    | LoadRGB
+    | LoadRGBA;
+  let loadImage:
+    filename::string =>
+    loadOption::loadOptionT? =>
+    callback::(option imageT => unit) =>
+    unit =>
+    unit;
+  let texImage2DWithImage: context::contextT => target::int => level::int => image::imageT => unit;
+  let texImage2D:
+    context::contextT =>
+    target::int =>
+    level::int =>
+    internalFormat::int =>
+    width::int =>
+    height::int =>
+    format::int =>
+    type_::int =>
+    data::rawTextureDataT =>
+    unit;
+  let uniform1i: context::contextT => location::uniformT => int => unit;
+  let uniform1f: context::contextT => location::uniformT => float => unit;
+  let generateMipmap: context::contextT => target::int => unit;
   type float32Array = array float;
   type uint16Array = array int;
   type dataKind =
@@ -96,7 +134,7 @@ module type t = {
       far::float =>
       unit;
   };
-  let module Mat4: Mat4T;
+  module Mat4: Mat4T;
   let uniformMatrix4fv: context::contextT => location::uniformT => value::Mat4.t => unit;
   type shaderParamsT =
     | Shader_delete_status

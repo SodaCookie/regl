@@ -1,0 +1,10 @@
+exec_prefix=${prefix}
+includedir=${prefix}/SOIL/src
+libdirsoil=${exec_prefix}/_build/SOIL/lib
+libdirsoilwrapp=${exec_prefix}/_build/src
+
+Name: reglnative
+Description: C dependencies of Reglnative.
+Version: 1.0.0
+Cflags: -I${includedir}
+Libs: -L${libdirsoil} -lSOIL -L${libdirsoilwrapp} -lsoil_wrapper -framework CoreFoundation
