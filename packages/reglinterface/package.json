@@ -1,6 +1,6 @@
 {
   "name": "reglinterface",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Reason interface to GL.",
   "scripts": {
     "start": "_build/src/app.out",
