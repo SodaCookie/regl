@@ -3,7 +3,7 @@
   "version": "0.1.5",
   "description": "Reason bindings to OpenGL",
   "scripts": {
-    "postinstall": "eval $(dependencyEnv) && mkdir -p _build/src/ && gcc -I`ocamlc -where` -c src/soil_wrapper.c -o _build/src/libsoil_wrapper.a && cd SOIL/projects/makefile && mkdir -p obj && make && cd ../../../ && mkdir -p _build/SOIL/lib/ && mv SOIL/lib/libSOIL.a _build/SOIL/lib/libSOIL.a && node setcurrentdir.js",
+    "postinstall": "eval $(dependencyEnv) && mkdir -p _build/src/ && gcc -I`ocamlc -where` -c src/soil_wrapper.c -o _build/src/libsoil_wrapper.a && cd SOIL/projects/makefile && mkdir -p obj && mkdir -p ../../lib && make && cd ../../../ && mkdir -p _build/SOIL/lib/ && mv SOIL/lib/libSOIL.a _build/SOIL/lib/libSOIL.a && node setcurrentdir.js",
     "start": "_build/src/app.out",
     "build": "eval $(dependencyEnv) && nopam && rebel -verbose",
     "buildexample": "npm run build && webpack _build/web/src/web_Tar__ExampleEntrypoint.js _build/web/src/app.js",
