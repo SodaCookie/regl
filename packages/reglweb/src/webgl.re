@@ -220,7 +220,7 @@ module Gl: Reglinterface.Gl.t = {
 
   /** TODO: We don't care about forcing load option for web images (we do allow it for native as SOIL supports
       it). We should probably not do this... */
-  let loadImage ::filename ::loadOption ::callback () =>
+  let loadImage ::filename ::loadOption=? ::callback () =>
     switch loadOption {
     | _ =>
       let image = makeImage ();

@@ -37,6 +37,7 @@ module type t = {
     mouseDown::(button::Events.buttonStateT => state::Events.stateT => x::int => y::int => unit)? =>
     mouseUp::(button::Events.buttonStateT => state::Events.stateT => x::int => y::int => unit)? =>
     mouseMove::(x::int => y::int => unit)? =>
+    windowResize::(unit => unit)? =>
     displayFunc::(float => unit) =>
     unit =>
     unit;

@@ -255,15 +255,13 @@ module Gl: Reglinterface.Gl.t = {
    * to pass in the C `char*` directly to tgls if we can figure out how ctypes works.
    */
   external soilLoadImage : filename::string => loadOption::int => option imageT = "load_image";
-  let loadImage ::filename ::loadOption ::callback () =>
+  let loadImage ::filename ::loadOption=LoadRGBA callback::(callback: option imageT => unit) () =>
     switch loadOption {
-    /* By default force RGBA */
-    | None => callback (soilLoadImage ::filename loadOption::4)
-    | Some LoadAuto => callback (soilLoadImage ::filename loadOption::0)
-    | Some LoadL => callback (soilLoadImage ::filename loadOption::1)
-    | Some LoadLA => callback (soilLoadImage ::filename loadOption::2)
-    | Some LoadRGB => callback (soilLoadImage ::filename loadOption::3)
-    | Some LoadRGBA => callback (soilLoadImage ::filename loadOption::4)
+    | LoadAuto => callback (soilLoadImage ::filename loadOption::0)
+    | LoadL => callback (soilLoadImage ::filename loadOption::1)
+    | LoadLA => callback (soilLoadImage ::filename loadOption::2)
+    | LoadRGB => callback (soilLoadImage ::filename loadOption::3)
+    | LoadRGBA => callback (soilLoadImage ::filename loadOption::4)
     };
   let texImage2D
       context::(context: contextT)
